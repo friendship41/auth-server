@@ -25,6 +25,6 @@ class DefaultMemberUserDetailService(
                 username,
                 memberAuthInfo.memberPassword,
                 listOf<GrantedAuthority>(
-                        SimpleGrantedAuthority("USER")))
+                        SimpleGrantedAuthority(memberAuthInfo.memberRole)))
     }
 }

@@ -30,8 +30,8 @@ class OAuth2AuthServerConfig(
         @Autowired private val defaultMemberUserDetailService: DefaultMemberUserDetailService
 ): AuthorizationServerConfigurerAdapter() {
 
-    override fun configure(clients: ClientDetailsServiceConfigurer?) {
-        clients?.jdbc(this.dataSource)
+    override fun configure(clients: ClientDetailsServiceConfigurer) {
+        clients.jdbc(this.dataSource).passwordEncoder(this.passwordEncoder())
     }
 
     override fun configure(endpoints: AuthorizationServerEndpointsConfigurer) {

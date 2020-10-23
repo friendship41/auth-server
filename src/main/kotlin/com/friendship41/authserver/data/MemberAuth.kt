@@ -16,7 +16,8 @@ data class MemberAuthInfo(
         var memberId: String,
         var memberEmail: String,
         var memberPassword: String,
-        var memberJoinDate: Date
+        var memberJoinDate: Date,
+        var memberRole: String
 )
 
 @Repository
