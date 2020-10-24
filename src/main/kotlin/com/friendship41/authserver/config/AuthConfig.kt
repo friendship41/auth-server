@@ -42,8 +42,10 @@ class OAuth2AuthServerConfig(
                 .tokenStore(this.dbTokenStore())
     }
 
-    override fun configure(security: AuthorizationServerSecurityConfigurer?) {
-        security?.passwordEncoder(this.passwordEncoder())
+    override fun configure(security: AuthorizationServerSecurityConfigurer) {
+        security
+                .checkTokenAccess("permitAll()")
+                .passwordEncoder(this.passwordEncoder())
     }
 
     @Bean
