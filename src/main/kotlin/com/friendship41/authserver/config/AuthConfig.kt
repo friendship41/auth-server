@@ -50,7 +50,8 @@ class OAuth2AuthServerConfig(
 
     @Bean
     fun dbTokenStore(): TokenStore {
-        return CustomJdbcTokenStore(this.dataSource)
+//        return CustomJdbcTokenStore(this.dataSource)
+        return JdbcTokenStore(this.dataSource)
     }
 
     @Bean
@@ -64,6 +65,7 @@ class OAuth2AuthServerConfig(
     }
 }
 
+//토큰 커스텀이 필요할시 다시 사용
 class CustomJdbcTokenStore(dataSource: DataSource): JdbcTokenStore(dataSource) {
     private val log = logger()
 
