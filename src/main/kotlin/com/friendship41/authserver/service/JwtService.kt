@@ -1,7 +1,6 @@
 package com.friendship41.authserver.service
 
 import com.friendship41.authserver.common.logger
-import com.friendship41.authserver.data.MemberAuthInfo
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.SignatureException
@@ -21,33 +20,13 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Service
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.security.KeyPair
 import java.time.Instant
 import java.util.*
-import java.util.function.Function
 import java.util.stream.Collectors
-
-@Service
-class JwtSignerService {
-    val keyPair: KeyPair = Keys.keyPairFor(SignatureAlgorithm.RS256)
-
-    fun createJwtAccessToken(member: MemberAuthInfo): String = Jwts.builder()
-            .signWith(this.keyPair.private, SignatureAlgorithm.RS256)
-            .claim("memberNo", member.memberNo.toString())
-            .setIssuer("friendship41")
-            .setExpiration(Date.from(Instant.now().plusMillis(300000)))
-            .setIssuedAt(Date.from(Instant.now()))
-            .compact()
-
-    fun validateJwt(jwt: String): Jws<Claims> = Jwts.parserBuilder()
-            .setSigningKey(this.keyPair.public)
-            .build()
-            .parseClaimsJws(jwt)
-}
 
 @Component
 class TokenProvider {
@@ -158,11 +137,13 @@ class TokenAuthenticationConverter(private val tokenProvider: TokenProvider): Se
 
     override fun convert(exchange: ServerWebExchange): Mono<Authentication> =
             Mono.justOrEmpty(exchange)
+                    .filter{ it.request.path.toString() != "/oauth/token" }
                     .map{ it.request.headers.getFirst(HttpHeaders.AUTHORIZATION) ?: ""}
                     .filter(Objects::nonNull)
-                    .filter{ it.length > BEARER.length }
+                    .filter{ it.length > BEARER.length && it.substring(0, BEARER.length) == BEARER }
                     .map{ it.substring(BEARER.length) }
                     .filter{ it != null && it != "" }
                     .map(this.tokenProvider::getAuthentication)
                     .filter(Objects::nonNull)
+
 }

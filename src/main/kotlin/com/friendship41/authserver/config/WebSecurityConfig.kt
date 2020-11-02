@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.AuthenticationException
@@ -36,7 +34,7 @@ class WebSecurityConfiguration(
                 .authenticationEntryPoint(entryPoint)
                 .and()
                 .addFilterAt(webFilter(), SecurityWebFiltersOrder.AUTHORIZATION)
-                .authorizeExchange().pathMatchers("/oauth/**").permitAll()
+                .authorizeExchange().pathMatchers("/oauth/token").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .httpBasic().disable()
