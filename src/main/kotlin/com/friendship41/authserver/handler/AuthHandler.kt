@@ -68,7 +68,7 @@ class TokenHandler(
         val parsedRefreshToken = this.tokenProvider.validateJwt(reqBodyOauthToken.refreshToken
                 ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST))
         val memberAuthInfo = this.memberAuthInfoRepository.findById(parsedRefreshToken.body["memberNo"].toString().toInt())
-        if (memberAuthInfo.isEmpty
+        if (!memberAuthInfo.isPresent
                 || memberAuthInfo.get().memberRefreshTokenId == null
                 || memberAuthInfo.get().memberRefreshTokenId != parsedRefreshToken.body["memberRefreshTokenId"]) {
             throw HttpServerErrorException(HttpStatus.BAD_REQUEST)

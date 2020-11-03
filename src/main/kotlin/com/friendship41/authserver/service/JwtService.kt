@@ -65,7 +65,7 @@ class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthI
     fun createRefreshToken(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): String {
         val memberAuthInfo
                 = this.memberAuthInfoRepository.findById(authentication.name.toInt())
-        if (memberAuthInfo.isEmpty) {
+        if (!memberAuthInfo.isPresent) {
             throw HttpServerErrorException(HttpStatus.BAD_REQUEST)
         }
         memberAuthInfo.get().memberRefreshTokenId = UUID.randomUUID().toString()
