@@ -65,7 +65,7 @@ class TokenProvider {
         Jwts.parserBuilder()
                 .setSigningKey(this.keyPair.public)
                 .build()
-                 .parseClaimsJws(jwtToken)
+                .parseClaimsJws(jwtToken)
     } catch (e: SignatureException) {
         logger().info("Invalid JWT signature: $jwtToken")
         throw BadCredentialsException("Invalid JWT signature: $jwtToken")
@@ -145,5 +145,4 @@ class TokenAuthenticationConverter(private val tokenProvider: TokenProvider): Se
                     .filter{ it != null && it != "" }
                     .map(this.tokenProvider::getAuthentication)
                     .filter(Objects::nonNull)
-
 }

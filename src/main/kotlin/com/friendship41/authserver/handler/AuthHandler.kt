@@ -2,6 +2,7 @@ package com.friendship41.authserver.handler
 
 import com.friendship41.authserver.data.ReqBodyOauthToken
 import com.friendship41.authserver.data.ResBodyOauthToken
+import com.friendship41.authserver.service.ClientDetailsService
 import com.friendship41.authserver.service.JwtReactiveAuthenticationManager
 import com.friendship41.authserver.service.TokenProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,20 +24,27 @@ import java.util.stream.Collectors
 @Component
 class TokenHandler(
         @Autowired private val tokenProvider: TokenProvider,
-        @Autowired private val  authenticationManager: JwtReactiveAuthenticationManager) {
+        @Autowired private val authenticationManager: JwtReactiveAuthenticationManager,
+        @Autowired private val clientDetailsService: ClientDetailsService) {
 
-    fun handlePostTokenRequest(request: ServerRequest): Mono<ServerResponse> {
-        return ok().body(request.formData()
-                .map {
-                    ReqBodyOauthToken(
-                            it.getFirst("grantType"),
-                            it.getFirst("username") ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST),
-                            it.getFirst("password") ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST),
-                            it.getFirst("scope")) }
-                .flatMap { reqBody -> this.authenticationManager
+    fun handlePostTokenRequest(request: ServerRequest): Mono<ServerResponse> = ok().body(request
+            .formData()
+            .map {
+                ReqBodyOauthToken(
+                        it.getFirst("grantType"),
+                        it.getFirst("username") ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST),
+                        it.getFirst("password") ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST),
+                        it.getFirst("scope"),
+                        this.clientDetailsService.checkClient(request.headers()))
+            }
+            .filter { it.checkedClientDetails.scope.split(",").contains(it.scope) }
+            .flatMap { reqBody ->
+                this.authenticationManager
                         .authenticate(UsernamePasswordAuthenticationToken(reqBody.username, reqBody.password))
-                        .map(this::createTokenResponse)})
-    }
+                        .map(this::createTokenResponse)
+            })
+
+
 
     fun createTokenResponse(authentication: Authentication): ResBodyOauthToken = ResBodyOauthToken(
             this.tokenProvider.createToken(authentication),

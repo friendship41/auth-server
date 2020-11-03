@@ -25,3 +25,25 @@ interface MemberAuthInfoRepository: JpaRepository<MemberAuthInfo, Int> {
         fun findByMemberId(memberId: String): MemberAuthInfo?
         fun findByMemberEmail(memberEmail: String): MemberAuthInfo?
 }
+
+@Entity
+data class OauthClientDetails(
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        var clientId: String,
+        var resourceIds: String?,
+        var clientSecret: String,
+        var scope: String,
+        var authorizedGrantTypes: String,
+        var webServerRedirectUri: String?,
+        var authorities: String?,
+        var accessTokenValidity: Int,
+        var refreshTokenValidity: Int,
+        var additionalInformation: String?,
+        var autoapprove: String
+)
+
+@Repository
+interface OauthClientDetailsRepository: JpaRepository<OauthClientDetails, String> {
+        fun findByClientId(clientId: String): OauthClientDetails?
+}
