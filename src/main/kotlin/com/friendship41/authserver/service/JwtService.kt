@@ -1,10 +1,14 @@
 package com.friendship41.authserver.service
 
 import com.friendship41.authserver.common.logger
+import com.friendship41.authserver.data.MemberAuthInfoRepository
+import com.friendship41.authserver.data.ReqBodyOauthToken
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.SignatureException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.ReactiveAuthenticationManager
@@ -20,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -29,19 +34,39 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Component
-class TokenProvider {
+class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthInfoRepository) {
     val keyPair: KeyPair = Keys.keyPairFor(SignatureAlgorithm.RS256)
 
-    fun createToken(authentication: Authentication): String = Jwts.builder()
+    fun createAccessToken(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): String = Jwts.builder()
             .signWith(this.keyPair.private, SignatureAlgorithm.RS256)
             .claim("memberNo", authentication.name)
             .claim("roles", authentication.authorities.stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(",")))
             .setIssuer("friendship41")
-            .setExpiration(Date.from(Instant.now().plusMillis(300000)))
+            .setExpiration(Date.from(Instant.now().plusMillis(
+                    reqBodyOauthToken.checkedClientDetails.accessTokenValidity*1000L)))
             .setIssuedAt(Date.from(Instant.now()))
             .compact()
+
+    fun createRefreshToken(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): String {
+        val memberAuthInfo
+                = this.memberAuthInfoRepository.findById(authentication.name.toInt())
+        if (memberAuthInfo.isEmpty) {
+            throw HttpServerErrorException(HttpStatus.BAD_REQUEST)
+        }
+        memberAuthInfo.get().memberRefreshTokenId = UUID.randomUUID().toString()
+        this.memberAuthInfoRepository.save(memberAuthInfo.get())
+        return Jwts.builder()
+                .signWith(this.keyPair.private, SignatureAlgorithm.RS256)
+                .claim("memberNo", authentication.name)
+                .claim("memberRefreshTokenId", memberAuthInfo.get().memberRefreshTokenId)
+                .setIssuer("friendship41")
+                .setExpiration(Date.from(Instant.now().plusMillis(
+                        reqBodyOauthToken.checkedClientDetails.refreshTokenValidity*1000L)))
+                .setIssuedAt(Date.from(Instant.now()))
+                .compact()
+    }
 
     fun getAuthentication(token: String?): Authentication {
         val jwtToken = token ?: throw BadCredentialsException("Invalid token: $token")
