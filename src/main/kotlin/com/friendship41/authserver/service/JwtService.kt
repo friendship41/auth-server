@@ -6,6 +6,7 @@ import com.friendship41.authserver.data.ReqBodyOauthToken
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -28,6 +29,7 @@ import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.io.File
 import java.io.FileInputStream
 import java.security.KeyPair
 import java.security.KeyStore
@@ -41,10 +43,18 @@ import javax.annotation.PostConstruct
 class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthInfoRepository) {
     lateinit var keyPair: KeyPair
 
+    @Value("\${spring.profiles.active}")
+    private val activeProfile: String? = null
+
     @PostConstruct
     fun setKeyPair() {
         val keyStore = KeyStore.getInstance("PKCS12")
-        keyStore.load(FileInputStream(ClassPathResource("keystore.p12").file), "vmfhwprxm".toCharArray())
+        println(activeProfile)
+        when (activeProfile?.toUpperCase()) {
+            "DEV" -> keyStore.load(FileInputStream(ClassPathResource("keystore.p12").file), "vmfhwprxm".toCharArray())
+            "RELEASE" -> keyStore.load(FileInputStream(File("/home/server_dev/keys/keystore.p12")), "vmfhwprxm".toCharArray())
+        }
+
         this.keyPair = KeyPair(
                 keyStore.getCertificate("spring").publicKey,
                 keyStore.getKey("spring", "vmfhwprxm".toCharArray()) as PrivateKey)
