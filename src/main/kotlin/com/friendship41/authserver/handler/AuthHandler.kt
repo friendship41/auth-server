@@ -82,8 +82,4 @@ class TokenHandler(
                                 .collect(Collectors.toList())),
                 reqBodyOauthToken)
     }
-
-
-
-    fun testReq(request: ServerRequest): Mono<ServerResponse> = ok().build()
 }

@@ -16,15 +16,4 @@ class TokenRouter(private val tokenHandler: TokenHandler) {
                 listOf(
                         POST("token", tokenHandler::handlePostTokenRequest)
                 )})
-
-    @Bean
-    fun testRouterFunction() = RouterFunctions.nest(
-            RequestPredicates.path("/"),
-            router {
-                listOf(
-                        GET("qwe", tokenHandler::testReq)
-                )
-            }
-    )
-
 }
