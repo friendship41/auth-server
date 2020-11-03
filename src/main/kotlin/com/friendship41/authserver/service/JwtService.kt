@@ -4,9 +4,9 @@ import com.friendship41.authserver.common.logger
 import com.friendship41.authserver.data.MemberAuthInfoRepository
 import com.friendship41.authserver.data.ReqBodyOauthToken
 import io.jsonwebtoken.*
-import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.reactive.ServerHttpRequest
@@ -28,14 +28,27 @@ import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.io.FileInputStream
 import java.security.KeyPair
+import java.security.KeyStore
+import java.security.PrivateKey
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
+import javax.annotation.PostConstruct
 
 @Component
 class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthInfoRepository) {
-    val keyPair: KeyPair = Keys.keyPairFor(SignatureAlgorithm.RS256)
+    lateinit var keyPair: KeyPair
+
+    @PostConstruct
+    fun setKeyPair() {
+        val keyStore = KeyStore.getInstance("PKCS12")
+        keyStore.load(FileInputStream(ClassPathResource("keystore.p12").file), "vmfhwprxm".toCharArray())
+        this.keyPair = KeyPair(
+                keyStore.getCertificate("spring").publicKey,
+                keyStore.getKey("spring", "vmfhwprxm".toCharArray()) as PrivateKey)
+    }
 
     fun createAccessToken(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): String = Jwts.builder()
             .signWith(this.keyPair.private, SignatureAlgorithm.RS256)
