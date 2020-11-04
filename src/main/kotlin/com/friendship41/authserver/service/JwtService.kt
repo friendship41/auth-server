@@ -46,18 +46,31 @@ class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthI
     @Value("\${spring.profiles.active}")
     private val activeProfile: String? = null
 
+    @Value("\${server.ssl.key-store}")
+    private val keyStorePath: String? = null
+
+    @Value("\${server.ssl.key-store-type}")
+    private val keyStoreType: String? = null
+
+    @Value("\${server.ssl.key-store-password}")
+    private val keyStorePassword: String? = null
+
+    @Value("\${server.ssl.key-alias}")
+    private val keyAlias: String? = null
+
     @PostConstruct
     fun setKeyPair() {
-        val keyStore = KeyStore.getInstance("PKCS12")
-        println(activeProfile)
+        val keyStore = KeyStore.getInstance(keyStoreType)
         when (activeProfile?.toUpperCase()) {
-            "DEV" -> keyStore.load(FileInputStream(ClassPathResource("keystore.p12").file), "vmfhwprxm".toCharArray())
-            "RELEASE" -> keyStore.load(FileInputStream(File("/home/server_dev/keys/keystore.p12")), "vmfhwprxm".toCharArray())
+            "DEV" -> keyStore.load(
+                    FileInputStream(ClassPathResource("keystore.p12").file),
+                    keyStorePassword?.toCharArray())
+            "RELEASE" -> keyStore.load(FileInputStream(File(keyStorePath ?: "")), keyStorePassword?.toCharArray())
         }
 
         this.keyPair = KeyPair(
-                keyStore.getCertificate("spring").publicKey,
-                keyStore.getKey("spring", "vmfhwprxm".toCharArray()) as PrivateKey)
+                keyStore.getCertificate(keyAlias).publicKey,
+                keyStore.getKey(keyAlias, keyStorePassword?.toCharArray()) as PrivateKey)
     }
 
     fun createAccessToken(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): String = Jwts.builder()
