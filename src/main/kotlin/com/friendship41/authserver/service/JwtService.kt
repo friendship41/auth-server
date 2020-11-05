@@ -81,6 +81,7 @@ class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthI
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList()))
             .claim("scope", reqBodyOauthToken.checkedClientDetails.scope.split(","))
+            .claim("client_id", reqBodyOauthToken.checkedClientDetails.clientId)
             .setIssuer("friendship41")
             .setExpiration(Date.from(Instant.now().plusMillis(
                     reqBodyOauthToken.checkedClientDetails.accessTokenValidity*1000L)))
