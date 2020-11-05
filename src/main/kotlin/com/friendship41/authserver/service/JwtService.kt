@@ -38,6 +38,7 @@ import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
+import kotlin.collections.ArrayList
 
 @Component
 class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthInfoRepository) {
@@ -76,9 +77,10 @@ class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthI
     fun createAccessToken(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): String = Jwts.builder()
             .signWith(this.keyPair.private, SignatureAlgorithm.RS256)
             .claim("memberNo", authentication.name)
-            .claim("roles", authentication.authorities.stream()
+            .claim("authorities", authentication.authorities.stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(",")))
+                    .collect(Collectors.toList()))
+            .claim("scope", reqBodyOauthToken.checkedClientDetails.scope.split(","))
             .setIssuer("friendship41")
             .setExpiration(Date.from(Instant.now().plusMillis(
                     reqBodyOauthToken.checkedClientDetails.accessTokenValidity*1000L)))
@@ -108,8 +110,8 @@ class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthI
         val jwtToken = token ?: throw BadCredentialsException("Invalid token: $token")
         val claims = validateJwt(jwtToken)
 
-        val authorities = claims.body["roles"].toString().split(",").stream()
-                .map{SimpleGrantedAuthority(it)}
+        val authorities = (claims.body["authorities"] as ArrayList<*>).stream()
+                .map{SimpleGrantedAuthority(it.toString())}
                 .collect(Collectors.toList())
 
         return UsernamePasswordAuthenticationToken(
