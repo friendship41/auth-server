@@ -7,3 +7,8 @@ data class ResBodyOauthToken(
         var expiresIn: Long,
         var roles: String
 )
+
+data class ResBodyTokenKey(
+        var alg: String,
+        var value: String
+)

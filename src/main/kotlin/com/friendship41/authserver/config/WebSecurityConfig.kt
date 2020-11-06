@@ -34,7 +34,7 @@ class WebSecurityConfiguration(
                 .authenticationEntryPoint(entryPoint)
                 .and()
                 .addFilterAt(webFilter(), SecurityWebFiltersOrder.AUTHORIZATION)
-                .authorizeExchange().pathMatchers("/oauth/token").permitAll()
+                .authorizeExchange().pathMatchers("/oauth/token", "/oauth/token_key").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .httpBasic().disable()

@@ -14,6 +14,7 @@ class TokenRouter(private val tokenHandler: TokenHandler) {
             RequestPredicates.path("/oauth"),
             router {
                 listOf(
-                        POST("token", tokenHandler::handlePostTokenRequest)
+                        POST("token", tokenHandler::handlePostTokenRequest),
+                        GET("token_key", tokenHandler::handleGetTokenKeyRequest)
                 )})
 }

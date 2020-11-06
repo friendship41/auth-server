@@ -43,6 +43,7 @@ import kotlin.collections.ArrayList
 @Component
 class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthInfoRepository) {
     lateinit var keyPair: KeyPair
+    private val encoder = Base64.getEncoder()
 
     @Value("\${spring.profiles.active}")
     private val activeProfile: String? = null
@@ -149,6 +150,10 @@ class TokenProvider(@Autowired private val memberAuthInfoRepository: MemberAuthI
         logger().info("Invalid token: $jwtToken")
         throw BadCredentialsException("Invalid token: $jwtToken")
     }
+
+    fun getPublicKeyAlgorithm(): String = this.keyPair.public.algorithm
+
+    fun getBase64EncodedPublicKey(): String = this.encoder.encodeToString(this.keyPair.public.encoded)
 }
 
 class JwtReactiveAuthenticationManager(

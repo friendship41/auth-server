@@ -1,9 +1,6 @@
 package com.friendship41.authserver.handler
 
-import com.friendship41.authserver.data.GrantType
-import com.friendship41.authserver.data.MemberAuthInfoRepository
-import com.friendship41.authserver.data.ReqBodyOauthToken
-import com.friendship41.authserver.data.ResBodyOauthToken
+import com.friendship41.authserver.data.*
 import com.friendship41.authserver.service.ClientDetailsService
 import com.friendship41.authserver.service.JwtReactiveAuthenticationManager
 import com.friendship41.authserver.service.TokenProvider
@@ -51,6 +48,7 @@ class TokenHandler(
                     GrantType.REFRESH_TOKEN -> Mono.just(this.createTokenResponse(reqBody))
                 }})
 
+    fun handleGetTokenKeyRequest(request: ServerRequest): Mono<ServerResponse> = ok().body(Mono.just(this.createTokenKeyResponse()))
 
     // password
     private fun createTokenResponse(authentication: Authentication, reqBodyOauthToken: ReqBodyOauthToken): ResBodyOauthToken
@@ -82,4 +80,9 @@ class TokenHandler(
                                 .collect(Collectors.toList())),
                 reqBodyOauthToken)
     }
+
+    private fun createTokenKeyResponse(): ResBodyTokenKey = ResBodyTokenKey(
+            this.tokenProvider.getPublicKeyAlgorithm(),
+            "-----BEGIN PUBLIC KEY-----\\n${this.tokenProvider.getBase64EncodedPublicKey()}\\n-----END PUBLIC KEY-----"
+    )
 }
