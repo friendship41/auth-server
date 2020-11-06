@@ -83,6 +83,6 @@ class TokenHandler(
 
     private fun createTokenKeyResponse(): ResBodyTokenKey = ResBodyTokenKey(
             this.tokenProvider.getPublicKeyAlgorithm(),
-            "-----BEGIN PUBLIC KEY-----\\n${this.tokenProvider.getBase64EncodedPublicKey()}\\n-----END PUBLIC KEY-----"
+            this.tokenProvider.getBase64EncodedPublicKey()
     )
 }
