@@ -5,6 +5,6 @@ data class ReqBodyOauthToken(
         var username: String?,
         var password: String?,
         var refreshToken: String?,
-        var scope: String,
+        var scope: List<String>,
         var checkedClientDetails: OauthClientDetails
 )

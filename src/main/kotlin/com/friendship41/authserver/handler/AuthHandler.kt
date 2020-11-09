@@ -37,9 +37,17 @@ class TokenHandler(
                         it.getFirst("username"),
                         it.getFirst("password"),
                         it.getFirst("refreshToken"),
-                        it.getFirst("scope") ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST),
+                        it.getFirst("scope")?.split(',') ?: throw HttpServerErrorException(HttpStatus.BAD_REQUEST),
                         this.clientDetailsService.checkClient(request.headers()))}
-            .filter { it.checkedClientDetails.scope.split(",").contains(it.scope) }
+            .filter {
+                var result = true
+                for (reqScope: String in it.scope) {
+                    if (!it.checkedClientDetails.scope.split(",").contains(reqScope)) {
+                        result = false
+                    }
+                }
+                result
+            }
             .flatMap { reqBody ->
                 when(reqBody.grantType) {
                     GrantType.PASSWORD -> this.authenticationManager
