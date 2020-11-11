@@ -1,0 +1,29 @@
+server:
+  port: 42222
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-type: PKCS12
+    key-store-password: vmfhwprxm
+    key-alias: spring
+
+spring:
+  datasource:
+    driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: jdbc:log4jdbc:mysql://stage41.xyz:3306/auth_db?characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: stage41
+    password: anjajdsid
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 5
+  jpa:
+    generate-ddl: false
+    show-sql: false
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+
+logging:
+  level:
+    root: debug

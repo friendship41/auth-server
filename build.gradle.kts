@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.3.4.RELEASE"
+    id("org.springframework.boot") version "2.3.5.RELEASE"
     id("io.spring.dependency-management") version "1.0.10.RELEASE"
     kotlin("jvm") version "1.4.10"
     kotlin("plugin.spring") version "1.4.10"
@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.friendship41"
-version = "1.0.1"
+version = "1.1.0"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 configurations {
@@ -26,6 +26,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    // cloud config
+    implementation("org.springframework.cloud:spring-cloud-starter-config:2.2.6.RELEASE")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     implementation("io.jsonwebtoken:jjwt-api:0.11.2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")

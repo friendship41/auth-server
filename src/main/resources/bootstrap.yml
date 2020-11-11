@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: release
+  application:
+    name: auth_server
+  cloud:
+    config:
+      uri: https://stage41.xyz:40000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh
