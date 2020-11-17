@@ -19,9 +19,7 @@ class ReactiveUserDetailsServiceImpl(
 ): ReactiveUserDetailsService {
 
     override fun findByUsername(username: String): Mono<UserDetails> = Mono
-            .justOrEmpty(
-                    memberAuthInfoRepository.findByMemberId(username)
-                            ?: memberAuthInfoRepository.findByMemberEmail(username))
+            .justOrEmpty(memberAuthInfoRepository.findByMemberAuthKey(username))
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(BadCredentialsException("username=${username} not found")))
             .map(this::convertToSpringSecurityUser)
